@@ -1,0 +1,95 @@
+{
+  "nodes": {
+    "flake-utils": {
+      "locked": {
+        "lastModified": 1634851050,
+        "narHash": "sha256-N83GlSGPJJdcqhUxSCS/WwW5pksYf3VP1M13cDRTSVA=",
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "rev": "c91f3de5adaf1de973b797ef7485e441a65b8935",
+        "type": "github"
+      },
+      "original": {
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "type": "github"
+      }
+    },
+    "liquid-fixpoint": {
+      "inputs": {
+        "flake-utils": [
+          "liquidhaskell",
+          "flake-utils"
+        ],
+        "nixpkgs": [
+          "liquidhaskell",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1633543256,
+        "narHash": "sha256-69qwUYIFcYCwz62G5DpkZMZ4i4Deqrp/Jo6eHDEm36k=",
+        "owner": "plredmond",
+        "repo": "liquid-fixpoint",
+        "rev": "fcc34e5e7cbfffa010cc1f8e00d2dd4c1f2ba5fe",
+        "type": "github"
+      },
+      "original": {
+        "owner": "plredmond",
+        "ref": "nix-flake",
+        "repo": "liquid-fixpoint",
+        "type": "github"
+      }
+    },
+    "liquidhaskell": {
+      "inputs": {
+        "flake-utils": [
+          "flake-utils"
+        ],
+        "liquid-fixpoint": "liquid-fixpoint",
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1633582401,
+        "narHash": "sha256-AyIIaZ7mX9CiZlm9qddj6LgWa2Yrc+VopRoNZ8ZMVoE=",
+        "owner": "plredmond",
+        "repo": "liquidhaskell",
+        "rev": "145d4d9d2d31416d932d54acc9cd7f28a1403086",
+        "type": "github"
+      },
+      "original": {
+        "owner": "plredmond",
+        "ref": "nix-flake",
+        "repo": "liquidhaskell",
+        "type": "github"
+      }
+    },
+    "nixpkgs": {
+      "locked": {
+        "lastModified": 1636333654,
+        "narHash": "sha256-3wh9PtCzcaJQuZrgZ+ygKfhltkDNNqT6zOzGsRbjZEo=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "e74894146a42ba552ebafa19ab2d1df7ccbc1738",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixos-21.05",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "root": {
+      "inputs": {
+        "flake-utils": "flake-utils",
+        "liquidhaskell": "liquidhaskell",
+        "nixpkgs": "nixpkgs"
+      }
+    }
+  },
+  "root": "root",
+  "version": 7
+}

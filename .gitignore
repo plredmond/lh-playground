@@ -1,0 +1,6 @@
+*.swp
+*.cabal
+.liquid/
+dist/
+result
+build-env*
