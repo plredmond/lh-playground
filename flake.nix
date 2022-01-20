@@ -10,7 +10,7 @@
   };
 
   outputs = { self, nixpkgs, flake-utils, liquidhaskell }: flake-utils.lib.eachDefaultSystem (system: {
-    devShell = self.defaultPackage.${system}.env;
+    devShell = self.defaultPackage.${system}.envFunc { withHoogle = true; };
     defaultPackage =
       let
         pkgs = import nixpkgs {
@@ -18,7 +18,7 @@
           overlays = [ liquidhaskell.overlay.${system} ];
         };
         # ghc version is coupled to the ghc version in the liquidhaskell flake,
-        # because that flake overrides the haskell package set for only ony
+        # because that flake overrides the haskell package set for only one
         # compiler
         ghc = "ghc8104";
         src = pkgs.nix-gitignore.gitignoreSource [ "*.nix" "result" "build-env" "*.cabal" "deploy/" ] ./.;

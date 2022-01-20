@@ -14,3 +14,4 @@ library:
     ghc-options:
         - -fno-warn-incomplete-patterns # liquidhaskell aready does this for us
         - -fplugin=LiquidHaskell
+        - -fplugin-opt=LiquidHaskell:--short-names # errors are unreadable without this
