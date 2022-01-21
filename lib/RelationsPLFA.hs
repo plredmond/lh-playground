@@ -116,7 +116,8 @@ invZLEN' _m (ZLEN __m) = ()
 
 -- * Detour to show Propositional ⇔ SMT
 
--- Propositional equality ⇔ SMT equality
+-- ** Propositional equality ⇔ SMT equality
+
 {-@
 eqSMT₁ :: x:_ -> y:_ -> Prop {EQ x y} -> {x == y} @-}
 eqSMT₁ :: a -> a -> EQRule a -> Proof
@@ -125,3 +126,59 @@ eqSMT₁ _x _y Refl{} = ()
 eqSMT₂ :: x:_ -> y:_ -> {_:Proof | x == y} -> Prop {EQ x y} @-}
 eqSMT₂ :: a -> a -> Proof -> EQRule a
 eqSMT₂ x _y () = Refl x
+
+-- ** Convert Nat to Integer
+
+{-@ reflect natVal @-}
+natVal :: Nat -> Integer
+natVal Zero = 0
+natVal (Suc n₀) = 1 + natVal n₀
+
+{-@
+natValNat :: n:_ -> { natVal zero <= natVal n
+                   &&           0 <= natVal n } @-}
+natValNat :: Nat -> Proof
+natValNat Zero = 0 <= natVal zero *** QED
+natValNat (Suc n₀)
+    =   0 <= natVal (Suc n₀)
+--  === 0 <= 1 + natVal n₀
+    ? natValNat n₀
+    *** QED
+
+-- ** Propositional x≤y ⇔ SMT x≤y
+
+{-@
+leSMT₁ :: x:_ -> y:_ -> Prop {LE x y} -> {natVal x <= natVal y} @-}
+leSMT₁ :: Nat -> Nat -> LERule -> Proof
+leSMT₁ _x _y (ZLEN y) = natValNat y
+leSMT₁ x y (SLES m n mLEn)
+    = leSMT₁ m n mLEn
+    ? (natVal x === 1 + natVal m)
+    ? (natVal y === 1 + natVal n)
+{-@
+leSMT₂ :: x:_ -> y:_ -> {_:_ | natVal x <= natVal y} -> Prop {LE x y} @-}
+leSMT₂ :: Nat -> Nat -> Proof -> LERule
+leSMT₂ Zero y () = ZLEN y
+leSMT₂ (Suc x₀) y () =
+    case y ? sucLeNonZero x₀ y of
+    Suc y₀ -> SLES x₀ y₀ (leSMT₂ x₀ y₀ (invSLES_SMT x₀ y₀))
+
+-- *** Detour for awkward lemmas
+
+-- | `Suc x ≤ y  ⇒  y ≠ zero` for Nats in SMT.
+{-@
+sucLeNonZero :: x:_ -> {y:_ | natVal (Suc x) <= natVal y} -> {y /= zero} @-}
+sucLeNonZero :: Nat -> Nat -> Proof
+sucLeNonZero _x (Suc _y₀) = () *** QED
+sucLeNonZero x Zero
+    =   natVal (Suc x) <= natVal zero
+--  === 1 + natVal x <= 0
+--  === natVal x <= (-1)
+    ? natValNat x -- contradiction
+    *** QED
+
+-- | Inversion of s≤s for Nats, but in SMT.
+{-@
+invSLES_SMT :: m:_ -> {n:_ | natVal (Suc m) <= natVal (Suc n)} -> {natVal m <= natVal n} @-}
+invSLES_SMT :: Nat -> Nat -> Proof
+invSLES_SMT m n = natVal (Suc m) <= natVal (Suc n) *** QED
