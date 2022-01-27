@@ -1,6 +1,7 @@
 {-# LANGUAGE GADTs #-}
 {-# OPTIONS_GHC "-Wno-missing-signatures" #-}
 {-@ LIQUID "--reflection" @-}
+{-@ LIQUID "--ple-local" @-}
 
 
 -- | Implementing some of https://plfa.github.io/Relations/
@@ -182,3 +183,82 @@ sucLeNonZero x Zero
 invSLES_SMT :: m:_ -> {n:_ | natVal (Suc m) <= natVal (Suc n)} -> {natVal m <= natVal n} @-}
 invSLES_SMT :: Nat -> Nat -> Proof
 invSLES_SMT m n = natVal (Suc m) <= natVal (Suc n) *** QED
+
+
+
+
+-- * Continue with the relations chapter
+
+{-@
+leRefl :: n:_ -> Prop {LE n n} @-}
+leRefl :: Nat -> LERule
+leRefl Zero = ZLEN zero
+leRefl (Suc n₀) = SLES n₀ n₀ (leRefl n₀)
+
+
+
+
+-- * Detour to do some random proof from the induction chapter
+
+{-@ reflect plus @-}
+plus :: Nat -> Nat -> Nat
+plus Zero y = y
+plus (Suc x) y = Suc (plus x y)
+
+{-@ reflect suc @-}
+suc :: Nat -> Nat
+suc = Suc
+
+{-@
+eqCong :: f:_ -> x:_ -> y:_ -> Prop {EQ x y} -> Prop {EQ (f x) (f y)} @-}
+eqCong :: (a -> b) -> a -> a -> EQRule a -> EQRule b
+eqCong f _x _y (Refl x) = Refl (f x)
+
+{-@
+plusAssocJat :: x:_ -> y:_ -> z:_ -> Prop {EQ (plus (plus x y) z) (plus x (plus y z))} @-}
+plusAssocJat :: Nat -> Nat -> Nat -> EQRule Nat
+plusAssocJat Zero y z
+    -- GOAL: (0+y)+z) = (0+(y+z)
+    = Refl (plus y z)
+    -- without PLE, you must additionally cause LH to see (0+) as an identity
+    ? (plus zero y) -- === y
+    ? (plus zero (plus y z)) -- === plus y z
+plusAssocJat (Suc x₀) y z
+    -- GOAL: (suc x₀+y)+z) = (suc x₀+(y+z)
+    = eqCong suc (plus (plus x₀ y) z) (plus x₀ (plus y z)) (plusAssocJat x₀ y z)
+    -- without PLE, you must additionally eval the goal to tha values passed to eqCong
+    ? (plus (plus (suc x₀) y) z === plus (suc (plus x₀ y)) z === suc (plus (plus x₀ y) z))
+    ? (plus (suc x₀) (plus y z) === suc (plus x₀ (plus y z)))
+
+{-@ ple plusAssocJatPle @-}
+{-@
+plusAssocJatPle :: x:_ -> y:_ -> z:_ -> Prop {EQ (plus (plus x y) z) (plus x (plus y z))} @-}
+plusAssocJatPle :: Nat -> Nat -> Nat -> EQRule Nat
+plusAssocJatPle Zero y z
+    -- GOAL: (0+y)+z) = (0+(y+z)
+    = Refl (plus y z)
+plusAssocJatPle (Suc x₀) y z
+    -- GOAL: (suc x₀+y)+z) = (suc x₀+(y+z)
+    = eqCong suc (plus (plus x₀ y) z) (plus x₀ (plus y z)) (plusAssocJatPle x₀ y z)
+
+{-@
+plusAssocEquational :: m:_ -> n:_ -> p:_ -> {plus (plus m n) p == plus m (plus n p)} @-}
+plusAssocEquational :: Nat -> Nat -> Nat -> Proof
+plusAssocEquational Zero n p
+    =   plus (plus Zero n) p
+    === plus n p
+    === plus Zero (plus n p)
+    *** QED
+plusAssocEquational (Suc m₀) n p
+    =   plus (plus (Suc m₀) n) p
+    === plus (Suc (plus m₀ n)) p
+    === Suc (plus (plus m₀ n) p)
+        ? plusAssocEquational m₀ n p
+    === Suc (plus m₀ (plus n p))
+    === plus (Suc m₀) (plus n p)
+    *** QED
+
+{-@
+plusAssocNative :: m:_ -> n:_ -> p:_ -> {(m + n) + p == m + (n + p)} @-}
+plusAssocNative :: Int -> Int -> Int -> Proof
+plusAssocNative m n p = () -- no PLE required
