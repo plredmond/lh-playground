@@ -20,8 +20,8 @@
         # ghc version is coupled to the ghc version in the liquidhaskell flake,
         # because that flake overrides the haskell package set for only one
         # compiler
-        ghc = "ghc8104";
-        src = pkgs.nix-gitignore.gitignoreSource [ "*.nix" "result" "build-env" "*.cabal" "deploy/" ] ./.;
+        ghc = "ghc8107"; # Based on https://github.com/ucsd-progsys/liquid-fixpoint/blob/develop/stack.yaml#L3
+        src = pkgs.nix-gitignore.gitignoreSource [ "*.nix" "result" "build-env" "*.cabal" "deploy/" "dist/" ] ./.;
         drv = pkgs.haskell.packages.${ghc}.callCabal2nix "lh-playground" src { };
       in
       pkgs.haskell.lib.overrideCabal drv (old: {
