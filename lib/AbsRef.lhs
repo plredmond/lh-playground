@@ -187,3 +187,6 @@ This is the same amount of work as it was to define `L a`{.haskell} above, but
 there's no flexibility. `Decending`{.haskell} can only be used to represent
 descending lists and won't work with existing list functions without explicit
 $O(n)$ conversions.
+
+Have Fun!^[The sourcecode for this document is:
+<https://github.com/plredmond/lh-playground/blob/main/lib/AbsRef.lhs>]
