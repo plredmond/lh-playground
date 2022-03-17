@@ -19,11 +19,13 @@ slides](https://github.com/ucsd-progsys/liquidhaskell/blob/07c28f992eebe07e7a782
 
 An abstract refinement is a higher-order function argument in a refinement.
 Abstract refinements let you write refinements which can be made concrete
-later by providing a function.
+later, and they can be added to both data definitions and to function
+types.
 
 The most common abstract refinement is the built-in one that's defined on list
-`[]`{.haskell}, but because it's built in there's still mystery about abstract
-refinements. Let's go over that.
+`[]`{.haskell}, but because it's built in, the definition isn't available.
+Let's clear up the mystery around that. First we'll talk about how to use it,
+then how to define it.
 
 > {-# LANGUAGE GADTs #-}
 > module AbsRef where
@@ -32,14 +34,17 @@ Use on a data structure
 -----------------------
 
 Here is how you might define the type of lists sorted in ascending order using
-the abstract refinement defined on lists.
+the built-in abstract refinement defined on lists.
 
 > {-@ type Ascending a = [a]<{\x y -> x < y}> @-}
 
 `Ascending`{.haskell} is a normal list `[a]`{.haskell} refined with the
-function `\x y -> x < y`{.haskell}. Combined with the abstract refinement
-built-in to the list type, this means that each head `x`{.haskell} is less than
-every element `y`{.haskell} in its adjacent tail. Let's look at an example.
+function `\x y -> x < y`{.haskell}. Combined with the built-in abstract
+refinement on the list type, this means that each head `x`{.haskell} is less
+than every element `y`{.haskell} in its adjacent tail. This is confusing
+because we can't see how that abstract refinement is defined! I'll show two
+examples of how it might be defined below, but first let's look at some
+examples using `Ascending`{.haskell} to understand what it means concretely.
 
 > {-@ eg1 :: Ascending Char @-}
 > eg1 :: String
@@ -56,9 +61,9 @@ Concretely, the inequalities `'a' < 'b'`{.haskell}, `'a' < 'c'`{.haskell}, and
 Since `'c' ≮ 'b'`{.haskell}, the binder `eg2`{.haskell} is a compile error.
 
 We can directly state the evidence given by an abstract refinement with a
-function to extract the tail of a non-empty `Ascending`{.haskell} and
-constrain it: Each element `x`{.haskell} in the tail of `xs`{.haskell} is less
-than `head xs`{.haskell}.
+function to extract the tail of a non-empty `Ascending`{.haskell} and constrain
+it: `head xs`{.haskell} is less than each element `x`{.haskell} in the tail of
+`xs`{.haskell}.
 
 > {-@ meaning
 >         :: {xs:Ascending a | xs /= []}
@@ -78,6 +83,8 @@ refinements, but let's look at how to define them yourself. Here is a list
 defined in normal ADT syntax with an abstract refinement `p`{.haskell} that
 relates each element to all elements in tail.^[Naming and syntax from [this
 slide](https://github.com/ucsd-progsys/liquidhaskell/blob/07c28f992eebe07e7a782c17fb1ac597e37ddb5c/docs/slides/niki/lhs/AbstractRefinements.lhs#L180-L187).]
+The built-in abstract refinement on `[]`{.haskell} is probably defined
+similarly.
 
 > data L a
 >     = C a (L a)
@@ -165,7 +172,7 @@ Here are two more conversions to complete the triangle.
 
 Last, here's an example showing that we can pass an `Ascending`{.haskell}
 through several transformations, and still know that we have an ascending list
-at the end. 
+at the end.
 
 > {-@ roundtrip :: Ascending a -> Ascending a @-}
 > roundtrip :: [a] -> [a]
@@ -190,9 +197,115 @@ list.
 > @-}
 
 This is the same amount of work as it was to define `L a`{.haskell} above, but
-there's no flexibility. `Decending`{.haskell} can only be used to represent
+there's no flexibility. `Descending`{.haskell} can only be used to represent
 descending lists and won't work with existing list functions without explicit
 $O(n)$ conversions.
+
+Other reasons you might want to use abstract refinements:
+
+* You have a monomorphic structure, but you want it to be "polymorphic" in the
+  constraints it imposes.
+
+* You want to relate multiple fields, but not the same way every time.
+
+* You want invariants between arguments to be preserved, without knowing what
+  those invariants are.
+
+Let's start with dependent pairs. Without abstract refinements, you can define
+them bespoke to their purpose.
+
+> data PairDoubled where
+>     PairDoubled :: Int -> Int -> PairDoubled
+> {-@
+> data PairDoubled where
+>     PairDoubled :: x:_ -> {y:_ | 2 * x == y} -> PairDoubled
+> @-}
+>
+> eg3 :: PairDoubled
+> eg3 = PairDoubled 4 8
+>
+> eg4 :: PairDoubled
+> eg4 = PairDoubled 0 8
+> {-@ fail eg4 @-}
+
+`PairDoubled`{.haskell} is a monomorphic data structure which can only contains
+pairs of `Int`{.haskell} where the second is twice the first. What if you want
+it to be three times?
+
+> data PairHead a where
+>     PairHead :: a -> [a] -> PairHead a
+> {-@
+> data PairHead a where
+>     PairHead :: x:a -> {y:[a] | x == head y} -> PairHead a
+> @-}
+>
+> eg5 :: PairHead Char
+> eg5 = PairHead 'H' ('H':"ello")
+>
+> eg6 :: PairHead Int
+> eg6 = PairHead 3 [2,1]
+> {-@ fail eg6 @-}
+
+`PairHead`{.haskell} is a data structure which can only contain pairs of
+`a`{.haskell} and `[a]`{.haskell} where the first is the head element of the
+second.
+
+Instead of defining a new datatype for every use case, you can define a general
+dependent pair.
+
+> data Pair a b where
+>     Pair :: a -> b -> Pair a b
+> {-@
+> data Pair a b <p :: a -> b -> Bool> where
+>     Pair :: x:a -> y:b<p x> -> Pair<p> a b<p y>
+> @-}
+
+`Pair`{.haskell} is a data structure with an abstract refinement which
+constrains the second element of the pair with a predicate on the first. Let's
+reimplement `PairDoubled`{.haskell} and `PairHead`{.haskell}.
+
+> {-@ type PairNTimes N = Pair<{\x y -> N * x == y}> Int Int @-}
+>
+> {-@ eg3' :: PairNTimes {2} @-}
+> eg3' :: Pair Int Int
+> eg3' = Pair 4 8
+>
+> {-@ eg4' :: PairNTimes {2} @-}
+> eg4' :: Pair Int Int
+> eg4' = Pair 0 8
+> {-@ fail eg4' @-}
+
+You can constrain `PairNTimes`{.haskell} with different values known at
+runtime.
+
+> {-@ dependent :: x:Int -> y:Int -> PairNTimes {y} @-}
+> dependent :: Int -> Int -> Pair Int Int
+> dependent x y = Pair x (x * y)
+
+Here's `PairHead`{.haskell} redefined.
+
+> {-@ type PairHead' a = Pair<{\x y -> x == head y}> a [a] @-}
+> {-@ eg5' :: PairHead' Char @-}
+> eg5' :: Pair Char String
+> eg5' = Pair 'H' ('H':"ello")
+>
+> {-@ eg6' :: PairHead' Int @-}
+> eg6' :: Pair Int [Int]
+> eg6' = Pair 3 [2,1]
+> {-@ fail eg6' @-}
+
+The general dependent pair is already in Liquid Haskell, too.
+
+> {-@ type AscPair a b = (a, b)<{\x y -> x < y}> @-}
+>
+> {-@ eg7 :: AscPair Int Int @-}
+> eg7 :: (Int, Int)
+> eg7 = (3, 12)
+>
+> {-@ eg8 :: AscPair Int Int @-}
+> eg8 :: (Int, Int)
+> eg8 = (120, 12)
+> {-@ fail eg8 @-}
 
 Have Fun! The sourcecode for this document is:
 <https://github.com/plredmond/lh-playground/blob/main/lib/AbsRef.lhs>.
