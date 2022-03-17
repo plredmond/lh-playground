@@ -2,6 +2,12 @@
 title: Abstract refinements
 ...
 
+<!--
+Build this document with the following:
+
+pandoc lib/AbsRef.lhs --from=markdown+lhs --to=html --standalone --toc
+-->
+
 What's an abstract refinement?
 ------------------------------
 
@@ -13,7 +19,7 @@ slides](https://github.com/ucsd-progsys/liquidhaskell/blob/07c28f992eebe07e7a782
 
 An abstract refinement is a higher-order function argument in a refinement.
 Abstract refinements let you write refinements which can be made concrete
-later by applying a function.
+later by providing a function.
 
 The most common abstract refinement is the built-in one that's defined on list
 `[]`{.haskell}, but because it's built in there's still mystery about abstract
@@ -25,8 +31,8 @@ refinements. Let's go over that.
 Use on a data structure
 -----------------------
 
-Here is how you might define the type of lists sorted in ascending order, by
-using the abstract refinement defined on lists.
+Here is how you might define the type of lists sorted in ascending order using
+the abstract refinement defined on lists.
 
 > {-@ type Ascending a = [a]<{\x y -> x < y}> @-}
 
@@ -45,10 +51,9 @@ Concretely, the inequalities `'a' < 'b'`{.haskell}, `'a' < 'c'`{.haskell}, and
 > {-@ eg2 :: Ascending Char @-}
 > eg2 :: String
 > eg2 = 'a':'c':'b':[]
+> {-@ fail eg2 @-}
 
 Since `'c' ≮ 'b'`{.haskell}, the binder `eg2`{.haskell} is a compile error.
-
-> {-@ fail eg2 @-}
 
 We can directly state the evidence given by an abstract refinement with a
 function to extract the tail of a non-empty `Ascending`{.haskell} and
@@ -71,7 +76,8 @@ Definition on a data structure
 It's all well and good to work with predefined and built-in abstract
 refinements, but let's look at how to define them yourself. Here is a list
 defined in normal ADT syntax with an abstract refinement `p`{.haskell} that
-relates each element to all elements in tail.
+relates each element to all elements in tail.^[Naming and syntax from [this
+slide](https://github.com/ucsd-progsys/liquidhaskell/blob/07c28f992eebe07e7a782c17fb1ac597e37ddb5c/docs/slides/niki/lhs/AbstractRefinements.lhs#L180-L187).]
 
 > data L a
 >     = C a (L a)
@@ -119,9 +125,9 @@ constructors have "G" appended to differentiate from the previous definition.
 >         ::     LG<p> a
 > @-}
 
-We now state the refinements on the resulting type explicitly, as you do with
-GADTs.^[I don't know which of these are required. Some seem optional because
-the functions defined later typecheck without them.]
+This definition must state the refinements on the resulting type explicitly, as
+you do with GADTs.^[I don't know which of these are required. Some seem
+optional because the functions defined later typecheck without them.]
 
 Definition on a function
 ------------------------
@@ -165,7 +171,7 @@ at the end.
 > roundtrip :: [a] -> [a]
 > roundtrip xs = listFromLG (lgFromL (lFromList xs))
 
-Why do we want to abstract refinements?
+Why do we want abstract refinements?
 ---------------------------------------
 
 You can get pretty far without abstract refinements by defining bespoke data
@@ -188,5 +194,5 @@ there's no flexibility. `Decending`{.haskell} can only be used to represent
 descending lists and won't work with existing list functions without explicit
 $O(n)$ conversions.
 
-Have Fun!^[The sourcecode for this document is:
-<https://github.com/plredmond/lh-playground/blob/main/lib/AbsRef.lhs>]
+Have Fun! The sourcecode for this document is:
+<https://github.com/plredmond/lh-playground/blob/main/lib/AbsRef.lhs>.
