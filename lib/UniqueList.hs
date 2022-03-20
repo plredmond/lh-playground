@@ -35,8 +35,9 @@ convert
 ---- @-}
 convert :: Eq a => a -> [a] -> [a]
 convert _e [] = []
-convert e (x:xs) | e /= x = x : convert e xs
-{-@ ple convert @-} -- So that LH knows there's only the @e /= x@ case.
+convert e (x:xs) = x : convert e xs
+{-@ ple convert @-}
+{-@ reflect convert @-}
 
 {-@ nelCons :: e:a -> {xs:UList a | not (listElem e xs)} -> UList a @-}
 nelCons :: Eq a => a -> [a] -> [a]
@@ -46,3 +47,4 @@ nelCons :: Eq a => a -> [a] -> [a]
 --nelCons e xs = uCons e (convert e xs === xs)
 nelCons e xs = uCons e (convert e xs)
 {-@ ple nelCons @-}
+{-@ ple reflect nelCons @-}
