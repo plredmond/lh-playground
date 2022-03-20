@@ -18,6 +18,7 @@ listElem e (x:xs) = e==x || listElem e xs
 {-@ uCons :: e:a -> UList ({x:a | e /= x}) -> UList a @-}
 uCons :: a -> [a] -> [a]
 uCons e xs = e : xs
+{-@ reflect uCons @-}
 
 -- | Convert evidence about list membership.
 {-@
