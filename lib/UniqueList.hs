@@ -47,4 +47,4 @@ nelCons :: Eq a => a -> [a] -> [a]
 --nelCons e xs = uCons e (convert e xs === xs)
 nelCons e xs = uCons e (convert e xs)
 {-@ ple nelCons @-}
-{-@ ple reflect nelCons @-}
+{-@ reflect nelCons @-}
