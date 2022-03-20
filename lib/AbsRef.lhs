@@ -11,19 +11,23 @@ pandoc lib/AbsRef.lhs --from=markdown+lhs --to=html --standalone --toc
 What's an abstract refinement?
 ------------------------------
 
-How do you talk about sorted structures or structures containing unique
-elements in Liquid Haskell?  Use abstract refinements. ^[This document is a
-very short and very incomplete introduction to abstract refinements. There's
-way more information in [these
+How do you talk about sorted data structures or structures containing unique
+elements in Liquid Haskell? One way is to define a data structure for each
+purpose, with hard-coded refinements to describe the relationships between its
+fields. Another way is to define the data structure once with an abstract
+refinement.^[This document is a very short and very incomplete introduction to
+abstract refinements. There's way more information in [these
 slides](https://github.com/ucsd-progsys/liquidhaskell/blob/07c28f992eebe07e7a782c17fb1ac597e37ddb5c/docs/slides/niki/lhs/AbstractRefinements.lhs).]
+Then when you have a need for additional constraints, you provide a function to
+express the relationship you want.
 
-An abstract refinement is a higher-order function argument in a refinement.
-Abstract refinements let you write refinements which can be made concrete
-later, and they can be added to both data definitions and to function
-types.
+An abstract refinement is a refinement with some details left out. You can fill
+in those details later by providing a function. The abstract refinement says
+how to apply the function to values and types to obtain a concrete refinement,
+and they can be added to both data definitions and to function types.
 
 The most common abstract refinement is the built-in one that's defined on list
-`[]`{.haskell}, but because it's built in, the definition isn't available.
+`[]`{.haskell}, but because it's built-in, the definition isn't available.
 Let's clear up the mystery around that. First we'll talk about how to use it,
 then how to define it.
 
@@ -33,18 +37,27 @@ then how to define it.
 Use on a data structure
 -----------------------
 
-Here is how you might define the type of lists sorted in ascending order using
-the built-in abstract refinement defined on lists.
+Here is an example of *using* the built-in abstract refinement defined on lists
+`[]`{.haskell}, to declare a type alias for lists sorted in ascending order.
 
 > {-@ type Ascending a = [a]<{\x y -> x < y}> @-}
 
-`Ascending`{.haskell} is a normal list `[a]`{.haskell} refined with the
-function `\x y -> x < y`{.haskell}. Combined with the built-in abstract
-refinement on the list type, this means that each head `x`{.haskell} is less
-than every element `y`{.haskell} in its adjacent tail. This is confusing
-because we can't see how that abstract refinement is defined! I'll show two
-examples of how it might be defined below, but first let's look at some
-examples using `Ascending`{.haskell} to understand what it means concretely.
+`Ascending`{.haskell} is an alias for a normal list `[a]`{.haskell} refined
+with the function `\x y -> x < y`{.haskell}. When this function is applied to
+the built-in abstract refinement on the list type, each cons cell
+`x:ys`{.haskell} throughout the list is constrained such that `x`{.haskell} is
+less than every element `y`{.haskell} in its adjacent tail `ys`{.haskell}. This
+comes from the use of our function to express a constraint on the fields of the
+`:`{.haskell} constructor which you could imagine like this:
+
+```.haskell
+(:) :: x:a -> [{y:a | x < y}] -> [a]
+```
+
+It's not clear where this constraint comes from, because we can't see how the
+abstract refinement is defined! Let's look briefly at a couple examples which
+use `Ascending`{.haskell} to understand it concretely, and then we'll look at
+how to define the abstract refinement relating heads to tails.
 
 > {-@ eg1 :: Ascending Char @-}
 > eg1 :: String
@@ -58,7 +71,8 @@ Concretely, the inequalities `'a' < 'b'`{.haskell}, `'a' < 'c'`{.haskell}, and
 > eg2 = 'a':'c':'b':[]
 > {-@ fail eg2 @-}
 
-Since `'c' ≮ 'b'`{.haskell}, the binder `eg2`{.haskell} is a compile error.
+Since `'c' ≮ 'b'`{.haskell}, the binder `eg2`{.haskell} results in a compile
+error.
 
 We can directly state the evidence given by an abstract refinement with a
 function to extract the tail of a non-empty `Ascending`{.haskell} and constrain
@@ -78,10 +92,10 @@ above type.
 Definition on a data structure
 ------------------------------
 
-It's all well and good to work with predefined and built-in abstract
-refinements, but let's look at how to define them yourself. Here is a list
-defined in normal ADT syntax with an abstract refinement `p`{.haskell} that
-relates each element to all elements in tail.^[Naming and syntax from [this
+It's all well and good to use predefined and built-in abstract refinements, but
+let's look at how to *define* them yourself. Here is a list defined in normal
+ADT syntax with an abstract refinement `p`{.haskell} that relates each element
+to all elements in tail.^[Naming and syntax from [this
 slide](https://github.com/ucsd-progsys/liquidhaskell/blob/07c28f992eebe07e7a782c17fb1ac597e37ddb5c/docs/slides/niki/lhs/AbstractRefinements.lhs#L180-L187).]
 The built-in abstract refinement on `[]`{.haskell} is probably defined
 similarly.
