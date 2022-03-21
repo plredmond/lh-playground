@@ -1,9 +1,14 @@
-module UniqueList where
+{-# LANGUAGE GADTs #-}
 
--- import Language.Haskell.Liquid.ProofCombinators
+module UniqueList where
 
 {-@ LIQUID "--ple-local" @-}
 {-@ LIQUID "--exact-data" @-}
+
+
+
+
+-- * Part I
 
 -- | Function to determine whether a value is present in a list.
 listElem :: Eq a => a -> [a] -> Bool
@@ -49,3 +54,31 @@ nelCons :: Eq a => a -> [a] -> [a]
 nelCons e xs = uCons e (convert e xs)
 {-@ ple nelCons @-}
 {-@ reflect nelCons @-}
+
+
+
+
+-- * Part II
+
+-- | Add an extra argument to cons, and apply the abstract refinement to head
+-- and tail.
+data L a where
+    C :: a -> L a -> () -> L a
+    N :: L a
+{-@
+data L a <p :: a -> L a -> () -> Bool> where
+    C :: x:a -> xs:L<p> a -> ()<p x xs> -> L<p> a
+    N :: L<p> a
+@-}
+
+lElem :: Eq a => a -> L a -> Bool
+lElem _ N = False
+lElem e (C x xs ()) = e==x || lElem e xs
+{-@ reflect lElem @-}
+
+{-@ type UL a = L<{\x xs _ -> not (lElem x xs)}> a @-}
+
+-- | Get constant time cons back.
+{-@ cons :: x:a -> {xs:UL a | not (lElem x xs)} -> UL a @-}
+cons :: a -> L a -> L a
+cons x xs = C x xs ()

@@ -141,7 +141,7 @@ constructors have "G" appended to differentiate from the previous definition.
 >     CG
 >         :: h : a
 >         -> t : LG<p> a<p h>
->         ->     LG<p> a<p h>
+>         ->     LG<p> a
 >     NG
 >         ::     LG<p> a
 > @-}
