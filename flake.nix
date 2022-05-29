@@ -2,7 +2,7 @@
   description = "lh-playground";
 
   inputs = {
-    nixpkgs.url = github:NixOS/nixpkgs/nixos-21.05;
+    nixpkgs.url = github:NixOS/nixpkgs/nixos-22.05;
     flake-utils.url = github:numtide/flake-utils;
     liquidhaskell.url = github:plredmond/liquidhaskell/nix-flake;
     liquidhaskell.inputs.nixpkgs.follows = "nixpkgs";
