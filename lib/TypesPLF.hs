@@ -237,70 +237,69 @@ stepDeterministic _x _y₁ _y₂ Iszro{}    Iszro{}    = () *** Admit
 
 
 
--- * Function for operational semantics
+-- * Try defining operational semantics as a function instead of an inductive proposition
 
 -- QQQ It's awkward to define step as a function because it is partial.
-
-{-@ reflect step @-}
-step :: TM -> Maybe TM
-step = \case
+{-@ reflect stepf @-}
+stepf :: TM -> Maybe TM
+stepf = \case
     TEST TRU  t₁ _t₂                    -> Just $ t₁
     TEST FLS _t₁  t₂                    -> Just $ t₂
-    TEST _t₁@(step -> Just t₁') t₂ t₃   -> Just $ TEST t₁' t₂ t₃
-    SCC _t₁@(step -> Just t₁')          -> Just $ SCC t₁'
+    TEST _t₁@(stepf -> Just t₁') t₂ t₃   -> Just $ TEST t₁' t₂ t₃
+    SCC _t₁@(stepf -> Just t₁')          -> Just $ SCC t₁'
     PRD ZRO                             -> Just $ ZRO
     PRD (SCC v) | nValue v              -> Just $ v
-    PRD _t₁@(step -> Just t₁')          -> Just $ PRD t₁'
+    PRD _t₁@(stepf -> Just t₁')          -> Just $ PRD t₁'
     ISZRO ZRO                           -> Just $ TRU
     ISZRO (SCC v) | nValue v            -> Just $ FLS
-    ISZRO _t₁@(step -> Just t₁')        -> Just $ ISZRO t₁'
+    ISZRO _t₁@(stepf -> Just t₁')        -> Just $ ISZRO t₁'
     _                                   -> Nothing
 
 -- | Same meaning as Stuck?
-{-@ type Stuck' = {t:_ | not (value t) && step t == Nothing} @-}
+{-@ type Stuckf = {t:_ | not (value t) && stepf t == Nothing} @-}
 
 -- | Same meaning as Deterministic?
-{-@ type Deterministic' Rf
+{-@ type Deterministicf Rf
         = x:_ -> {y1:_ | Rf x == y1} -> {y2:_ | Rf x == y2}
         -> {_:Proof | y1 == y2} @-}
 
 {-@
-someTermIsStuck' :: Stuck' @-}
-someTermIsStuck' :: TM
-someTermIsStuck' = SCC TRU ? normalForm
+someTermIsStuckf :: Stuckf @-}
+someTermIsStuckf :: TM
+someTermIsStuckf = SCC TRU ? normalForm
   where
-    {-@ normalForm :: { step (SCC TRU) == Nothing } @-}
+    {-@ normalForm :: { stepf (SCC TRU) == Nothing } @-}
     normalForm
-        =   step (SCC TRU)
-        === case step TRU of Nothing -> Nothing
+        =   stepf (SCC TRU)
+        === case stepf TRU of Nothing -> Nothing
         === Nothing
         *** QED
-    -- QQQ The evaluation from `step (SCC TRU)` to `case step TRU` comes from
-    -- use of view patterns in `step`. The `Nothing -> Nothing` means that if
+    -- QQQ The evaluation from `stepf (SCC TRU)` to `case stepf TRU` comes from
+    -- use of view patterns in `stepf`. The `Nothing -> Nothing` means that if
     -- the view pattern doesn't match then the whole pattern fails.
 
 {-@
-valueIsNf' :: {t:_ | value t} -> { step t == Nothing } @-}
-valueIsNf' :: TM -> Proof
-valueIsNf' = \case
-    TRU -> step TRU *** QED -- No pattern matches, evaluates to Nothing
-    FLS -> step FLS *** QED -- No pattern matches, evaluates to Nothing
-    ZRO -> step ZRO *** QED -- No pattern matches, evaluates to Nothing
-    SCC t | nValue t -> step (SCC t) ? valueIsNf' t *** QED
-    -- QQQ The only case where `step` might do work is for `SCC t`, but since
+valueIsNFf :: {t:_ | value t} -> { stepf t == Nothing } @-}
+valueIsNFf :: TM -> Proof
+valueIsNFf = \case
+    TRU -> stepf TRU *** QED -- No pattern matches, evaluates to Nothing
+    FLS -> stepf FLS *** QED -- No pattern matches, evaluates to Nothing
+    ZRO -> stepf ZRO *** QED -- No pattern matches, evaluates to Nothing
+    SCC t | nValue t -> stepf (SCC t) ? valueIsNFf t *** QED
+    -- QQQ The only case where `stepf` might do work is for `SCC t`, but since
     -- the precondition mandates `nValue t` we can use the inductive
-    -- assumption that `step t` is `Nothing`, which guarantees the `SCC t` case
-    -- in `step` won't match.
+    -- assumption that `stepf t` is `Nothing`, which guarantees the `SCC t` case
+    -- in `stepf` won't match.
 
 {-@
-congruence :: f:_ -> Deterministic' {f} @-}
+congruence :: f:_ -> Deterministicf {f} @-}
 congruence :: (a -> b) -> a -> b -> b -> Proof
 congruence _f _x _y₁ _y₂ = ()
 
 {-@
-stepDeterministic' :: Deterministic' {step} @-}
-stepDeterministic' :: TM -> Maybe TM -> Maybe TM -> Proof
-stepDeterministic' = congruence step
+stepDeterministicf :: Deterministicf {stepf} @-}
+stepDeterministicf :: TM -> Maybe TM -> Maybe TM -> Proof
+stepDeterministicf = congruence stepf
 -- QQQ It is pointless to try to write down a proof of determinism of the
--- step function because determinism is already part of LH's model of
+-- stepf function because determinism is already part of LH's model of
 -- Haskell.
