@@ -110,12 +110,6 @@ data StepRule where
 {-@ type Stuck T = (NotValue {T}, NormalForm {Step} {T}) @-}
 
 {-@
-type Deterministic R
-    = x:_ -> y1:_ -> y2:_
-    -> Prop{ R x y1 } -> Prop{ R x y2 } -> {_:Proof | y1 == y2}
-@-}
-
-{-@
 someTermIsStuck :: Stuck {SCC TRU} @-}
 someTermIsStuck :: (TM, TM -> StepRule -> Proof)
 someTermIsStuck = (notValue, normalForm)
@@ -168,17 +162,139 @@ valueIsNf' = \case
     -- assumption that `step t` is `Nothing`, which guarantees the `SCC t` case
     -- in `step` won't match.
 
+{-@ type Deterministic R
+        = x:_ -> y1:_ -> y2:_ -> Prop{ R x y1 } -> Prop{ R x y2 }
+        -> {_:Proof | y1 == y2} @-}
+
 {-@
 stepDeterministic :: Deterministic {Step} @-}
 stepDeterministic :: TM -> TM -> TM -> StepRule -> StepRule -> Proof
-stepDeterministic x y₁ y₂ TestTru{}  TestTru{}  = ()
-stepDeterministic x y₁ y₂ TestFls{}  TestFls{}  = ()
-stepDeterministic x y₁ y₂ Test{}     Test{}     = () *** Admit
-stepDeterministic x y₁ y₂ Scc{}      Scc{}      = () *** Admit
-stepDeterministic x y₁ y₂ PrdZro{}   PrdZro{}   = ()
-stepDeterministic x y₁ y₂ PrdScc{}   PrdScc{}   = ()
-stepDeterministic x y₁ y₂ Prd{}      Prd{}      = () *** Admit
-stepDeterministic x y₁ y₂ IszroZro{} IszroZro{} = ()
-stepDeterministic x y₁ y₂ IszroScc{} IszroScc{} = ()
-stepDeterministic x y₁ y₂ Iszro{}    Iszro{}    = () *** Admit
-stepDeterministic x y₁ y₂ xRy₁ xRy₂ = () *** Admit -- FIXME
+-- QQQ Probably have to handle 81 cases here.
+
+stepDeterministic _x _y₁ _y₂ TestTru{}  TestTru{}  = ()
+stepDeterministic _x _y₁ _y₂ TestTru{}  TestFls{}  = ()
+stepDeterministic _x _y₁ _y₂ TestTru{}  Test{}     = () *** Admit
+stepDeterministic _x _y₁ _y₂ TestTru{}  Scc{}      = ()
+stepDeterministic _x _y₁ _y₂ TestTru{}  PrdZro{}   = ()
+stepDeterministic _x _y₁ _y₂ TestTru{}  PrdScc{}   = ()
+stepDeterministic _x _y₁ _y₂ TestTru{}  Prd{}      = ()
+stepDeterministic _x _y₁ _y₂ TestTru{}  IszroZro{} = ()
+stepDeterministic _x _y₁ _y₂ TestTru{}  IszroScc{} = ()
+stepDeterministic _x _y₁ _y₂ TestTru{}  Iszro{}    = ()
+
+stepDeterministic _x _y₁ _y₂ TestFls{}  TestTru{}  = ()
+stepDeterministic _x _y₁ _y₂ TestFls{}  TestFls{}  = ()
+stepDeterministic _x _y₁ _y₂ TestFls{}  Test{}     = () *** Admit
+stepDeterministic _x _y₁ _y₂ TestFls{}  Scc{}      = ()
+stepDeterministic _x _y₁ _y₂ TestFls{}  PrdZro{}   = ()
+stepDeterministic _x _y₁ _y₂ TestFls{}  PrdScc{}   = ()
+stepDeterministic _x _y₁ _y₂ TestFls{}  Prd{}      = ()
+stepDeterministic _x _y₁ _y₂ TestFls{}  IszroZro{} = ()
+stepDeterministic _x _y₁ _y₂ TestFls{}  IszroScc{} = ()
+stepDeterministic _x _y₁ _y₂ TestFls{}  Iszro{}    = ()
+
+stepDeterministic _x _y₁ _y₂ Test{}     TestTru{}  = () *** Admit
+stepDeterministic _x _y₁ _y₂ Test{}     TestFls{}  = () *** Admit
+stepDeterministic _x _y₁ _y₂ Test{}     Test{}     = () *** Admit
+stepDeterministic _x _y₁ _y₂ Test{}     Scc{}      = ()
+stepDeterministic _x _y₁ _y₂ Test{}     PrdZro{}   = ()
+stepDeterministic _x _y₁ _y₂ Test{}     PrdScc{}   = ()
+stepDeterministic _x _y₁ _y₂ Test{}     Prd{}      = ()
+stepDeterministic _x _y₁ _y₂ Test{}     IszroZro{} = ()
+stepDeterministic _x _y₁ _y₂ Test{}     IszroScc{} = ()
+stepDeterministic _x _y₁ _y₂ Test{}     Iszro{}    = ()
+
+stepDeterministic _x _y₁ _y₂ Scc{}      TestTru{}  = ()
+stepDeterministic _x _y₁ _y₂ Scc{}      TestFls{}  = ()
+stepDeterministic _x _y₁ _y₂ Scc{}      Test{}     = ()
+stepDeterministic _x _y₁ _y₂ Scc{}      Scc{}      = () *** Admit
+stepDeterministic _x _y₁ _y₂ Scc{}      PrdZro{}   = ()
+stepDeterministic _x _y₁ _y₂ Scc{}      PrdScc{}   = ()
+stepDeterministic _x _y₁ _y₂ Scc{}      Prd{}      = ()
+stepDeterministic _x _y₁ _y₂ Scc{}      IszroZro{} = ()
+stepDeterministic _x _y₁ _y₂ Scc{}      IszroScc{} = ()
+stepDeterministic _x _y₁ _y₂ Scc{}      Iszro{}    = ()
+
+stepDeterministic _x _y₁ _y₂ PrdZro{}   TestTru{}  = ()
+stepDeterministic _x _y₁ _y₂ PrdZro{}   TestFls{}  = ()
+stepDeterministic _x _y₁ _y₂ PrdZro{}   Test{}     = ()
+stepDeterministic _x _y₁ _y₂ PrdZro{}   Scc{}      = ()
+stepDeterministic _x _y₁ _y₂ PrdZro{}   PrdZro{}   = ()
+stepDeterministic _x _y₁ _y₂ PrdZro{}   PrdScc{}   = ()
+stepDeterministic _x _y₁ _y₂ PrdZro{}   Prd{}      = () *** Admit
+stepDeterministic _x _y₁ _y₂ PrdZro{}   IszroZro{} = ()
+stepDeterministic _x _y₁ _y₂ PrdZro{}   IszroScc{} = ()
+stepDeterministic _x _y₁ _y₂ PrdZro{}   Iszro{}    = ()
+
+stepDeterministic _x _y₁ _y₂ PrdScc{}   TestTru{}  = ()
+stepDeterministic _x _y₁ _y₂ PrdScc{}   TestFls{}  = ()
+stepDeterministic _x _y₁ _y₂ PrdScc{}   Test{}     = ()
+stepDeterministic _x _y₁ _y₂ PrdScc{}   Scc{}      = ()
+stepDeterministic _x _y₁ _y₂ PrdScc{}   PrdZro{}   = ()
+stepDeterministic _x _y₁ _y₂ PrdScc{}   PrdScc{}   = ()
+stepDeterministic _x _y₁ _y₂ PrdScc{}   Prd{}      = () *** Admit
+stepDeterministic _x _y₁ _y₂ PrdScc{}   IszroZro{} = ()
+stepDeterministic _x _y₁ _y₂ PrdScc{}   IszroScc{} = ()
+stepDeterministic _x _y₁ _y₂ PrdScc{}   Iszro{}    = ()
+
+stepDeterministic _x _y₁ _y₂ Prd{}      TestTru{}  = ()
+stepDeterministic _x _y₁ _y₂ Prd{}      TestFls{}  = ()
+stepDeterministic _x _y₁ _y₂ Prd{}      Test{}     = ()
+stepDeterministic _x _y₁ _y₂ Prd{}      Scc{}      = ()
+stepDeterministic _x _y₁ _y₂ Prd{}      PrdZro{}   = () *** Admit
+stepDeterministic _x _y₁ _y₂ Prd{}      PrdScc{}   = () *** Admit
+stepDeterministic _x _y₁ _y₂ Prd{}      Prd{}      = () *** Admit
+stepDeterministic _x _y₁ _y₂ Prd{}      IszroZro{} = ()
+stepDeterministic _x _y₁ _y₂ Prd{}      IszroScc{} = ()
+stepDeterministic _x _y₁ _y₂ Prd{}      Iszro{}    = ()
+
+stepDeterministic _x _y₁ _y₂ IszroZro{} TestTru{}  = ()
+stepDeterministic _x _y₁ _y₂ IszroZro{} TestFls{}  = ()
+stepDeterministic _x _y₁ _y₂ IszroZro{} Test{}     = ()
+stepDeterministic _x _y₁ _y₂ IszroZro{} Scc{}      = ()
+stepDeterministic _x _y₁ _y₂ IszroZro{} PrdZro{}   = ()
+stepDeterministic _x _y₁ _y₂ IszroZro{} PrdScc{}   = ()
+stepDeterministic _x _y₁ _y₂ IszroZro{} Prd{}      = ()
+stepDeterministic _x _y₁ _y₂ IszroZro{} IszroZro{} = ()
+stepDeterministic _x _y₁ _y₂ IszroZro{} IszroScc{} = ()
+stepDeterministic _x _y₁ _y₂ IszroZro{} Iszro{}    = () *** Admit
+
+stepDeterministic _x _y₁ _y₂ IszroScc{} TestTru{}  = ()
+stepDeterministic _x _y₁ _y₂ IszroScc{} TestFls{}  = ()
+stepDeterministic _x _y₁ _y₂ IszroScc{} Test{}     = ()
+stepDeterministic _x _y₁ _y₂ IszroScc{} Scc{}      = ()
+stepDeterministic _x _y₁ _y₂ IszroScc{} PrdZro{}   = ()
+stepDeterministic _x _y₁ _y₂ IszroScc{} PrdScc{}   = ()
+stepDeterministic _x _y₁ _y₂ IszroScc{} Prd{}      = ()
+stepDeterministic _x _y₁ _y₂ IszroScc{} IszroZro{} = ()
+stepDeterministic _x _y₁ _y₂ IszroScc{} IszroScc{} = ()
+stepDeterministic _x _y₁ _y₂ IszroScc{} Iszro{}    = () *** Admit
+
+stepDeterministic _x _y₁ _y₂ Iszro{}    TestTru{}  = ()
+stepDeterministic _x _y₁ _y₂ Iszro{}    TestFls{}  = ()
+stepDeterministic _x _y₁ _y₂ Iszro{}    Test{}     = ()
+stepDeterministic _x _y₁ _y₂ Iszro{}    Scc{}      = ()
+stepDeterministic _x _y₁ _y₂ Iszro{}    PrdZro{}   = ()
+stepDeterministic _x _y₁ _y₂ Iszro{}    PrdScc{}   = ()
+stepDeterministic _x _y₁ _y₂ Iszro{}    Prd{}      = ()
+stepDeterministic _x _y₁ _y₂ Iszro{}    IszroZro{} = () *** Admit
+stepDeterministic _x _y₁ _y₂ Iszro{}    IszroScc{} = () *** Admit
+stepDeterministic _x _y₁ _y₂ Iszro{}    Iszro{}    = () *** Admit
+
+{-@ type Deterministic' Rf
+        = x:_ -> {y1:_ | Rf x == y1} -> {y2:_ | Rf x == y2}
+        -> {_:Proof | y1 == y2} @-}
+
+{-@
+congruence :: f:_ -> Deterministic' {f} @-}
+congruence :: (a -> b) -> a -> b -> b -> Proof
+congruence _f _x _y₁ _y₂ = ()
+
+{-@
+stepDeterministic' :: Deterministic' {step} @-}
+stepDeterministic' :: TM -> Maybe TM -> Maybe TM -> Proof
+stepDeterministic' = congruence step
+
+-- QQQ It is pointless to try to write down a proof of determinism of the
+-- step function because determinism is already part of LH's model of
+-- Haskell.
