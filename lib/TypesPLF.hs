@@ -37,23 +37,6 @@ nValue _ = False
 value :: TM -> Bool
 value t = bValue t || nValue t
 
--- QQQ It's awkward to define step as a function because it is partial.
-
-{-@ reflect step @-}
-step :: TM -> Maybe TM
-step = \case
-    TEST TRU  t₁ _t₂                    -> Just $ t₁
-    TEST FLS _t₁  t₂                    -> Just $ t₂
-    TEST _t₁@(step -> Just t₁') t₂ t₃   -> Just $ TEST t₁' t₂ t₃
-    SCC _t₁@(step -> Just t₁')          -> Just $ SCC t₁'
-    PRD ZRO                             -> Just $ ZRO
-    PRD (SCC v) | nValue v              -> Just $ v
-    PRD _t₁@(step -> Just t₁')          -> Just $ PRD t₁'
-    ISZRO ZRO                           -> Just $ TRU
-    ISZRO (SCC v) | nValue v            -> Just $ FLS
-    ISZRO _t₁@(step -> Just t₁')        -> Just $ ISZRO t₁'
-    _                                   -> Nothing
-
 -- QQQ Defining step as an inductive proposition requires three definitions.
 --
 -- BUG Using `Prop` with binder `v` runs into the type aliases name
@@ -109,6 +92,10 @@ data StepRule where
 {-@ type NormalForm R T = t':_ -> Prop{ R T t' } -> {_:Proof | false} @-}
 {-@ type Stuck T = (NotValue {T}, NormalForm {Step} {T}) @-}
 
+{-@ type Deterministic R
+        = x:_ -> y1:_ -> y2:_ -> Prop{ R x y1 } -> Prop{ R x y2 }
+        -> {_:Proof | y1 == y2} @-}
+
 {-@
 someTermIsStuck :: Stuck {SCC TRU} @-}
 someTermIsStuck :: (TM, TM -> StepRule -> Proof)
@@ -124,23 +111,6 @@ someTermIsStuck = (notValue, normalForm)
     -- applicable to `TRU` and so we match arbitrarily on `Iszro{}` and LH
     -- accepts that nothing further is required.
 
-{-@ type Stuck' = {t:_ | not (value t) && step t == Nothing} @-}
-
-{-@
-someTermIsStuck' :: Stuck' @-}
-someTermIsStuck' :: TM
-someTermIsStuck' = SCC TRU ? normalForm
-  where
-    {-@ normalForm :: { step (SCC TRU) == Nothing } @-}
-    normalForm
-        =   step (SCC TRU)
-        === case step TRU of Nothing -> Nothing
-        === Nothing
-        *** QED
-    -- QQQ The evaluation from `step (SCC TRU)` to `case step TRU` comes from
-    -- use of view patterns in `step`. The `Nothing -> Nothing` means that if
-    -- the view pattern doesn't match then the whole pattern fails.
-
 {-@
 valueIsNf :: {t:_ | value t} -> NormalForm {Step} {t} @-}
 valueIsNf :: TM -> TM -> StepRule -> Proof
@@ -150,26 +120,9 @@ valueIsNf ZRO   _t' Iszro{} = () -- No rules apply
 valueIsNf SCC{} _t' (Scc u u' u2u') = valueIsNf u u' u2u'
 
 {-@
-valueIsNf' :: {t:_ | value t} -> { step t == Nothing } @-}
-valueIsNf' :: TM -> Proof
-valueIsNf' = \case
-    TRU -> step TRU *** QED -- No pattern matches, evaluates to Nothing
-    FLS -> step FLS *** QED -- No pattern matches, evaluates to Nothing
-    ZRO -> step ZRO *** QED -- No pattern matches, evaluates to Nothing
-    SCC t | nValue t -> step (SCC t) ? valueIsNf' t *** QED
-    -- QQQ The only case where `step` might do work is for `SCC t`, but since
-    -- the precondition mandates `nValue t` we can use the inductive
-    -- assumption that `step t` is `Nothing`, which guarantees the `SCC t` case
-    -- in `step` won't match.
-
-{-@ type Deterministic R
-        = x:_ -> y1:_ -> y2:_ -> Prop{ R x y1 } -> Prop{ R x y2 }
-        -> {_:Proof | y1 == y2} @-}
-
-{-@
 stepDeterministic :: Deterministic {Step} @-}
 stepDeterministic :: TM -> TM -> TM -> StepRule -> StepRule -> Proof
--- QQQ Probably have to handle 81 cases here.
+-- QQQ Have to handle 81 cases here.
 
 stepDeterministic _x _y₁ _y₂ TestTru{}  TestTru{}  = ()
 stepDeterministic _x _y₁ _y₂ TestTru{}  TestFls{}  = ()
@@ -281,9 +234,63 @@ stepDeterministic _x _y₁ _y₂ Iszro{}    IszroZro{} = () *** Admit
 stepDeterministic _x _y₁ _y₂ Iszro{}    IszroScc{} = () *** Admit
 stepDeterministic _x _y₁ _y₂ Iszro{}    Iszro{}    = () *** Admit
 
+
+
+
+-- * Function for operational semantics
+
+-- QQQ It's awkward to define step as a function because it is partial.
+
+{-@ reflect step @-}
+step :: TM -> Maybe TM
+step = \case
+    TEST TRU  t₁ _t₂                    -> Just $ t₁
+    TEST FLS _t₁  t₂                    -> Just $ t₂
+    TEST _t₁@(step -> Just t₁') t₂ t₃   -> Just $ TEST t₁' t₂ t₃
+    SCC _t₁@(step -> Just t₁')          -> Just $ SCC t₁'
+    PRD ZRO                             -> Just $ ZRO
+    PRD (SCC v) | nValue v              -> Just $ v
+    PRD _t₁@(step -> Just t₁')          -> Just $ PRD t₁'
+    ISZRO ZRO                           -> Just $ TRU
+    ISZRO (SCC v) | nValue v            -> Just $ FLS
+    ISZRO _t₁@(step -> Just t₁')        -> Just $ ISZRO t₁'
+    _                                   -> Nothing
+
+-- | Same meaning as Stuck?
+{-@ type Stuck' = {t:_ | not (value t) && step t == Nothing} @-}
+
+-- | Same meaning as Deterministic?
 {-@ type Deterministic' Rf
         = x:_ -> {y1:_ | Rf x == y1} -> {y2:_ | Rf x == y2}
         -> {_:Proof | y1 == y2} @-}
+
+{-@
+someTermIsStuck' :: Stuck' @-}
+someTermIsStuck' :: TM
+someTermIsStuck' = SCC TRU ? normalForm
+  where
+    {-@ normalForm :: { step (SCC TRU) == Nothing } @-}
+    normalForm
+        =   step (SCC TRU)
+        === case step TRU of Nothing -> Nothing
+        === Nothing
+        *** QED
+    -- QQQ The evaluation from `step (SCC TRU)` to `case step TRU` comes from
+    -- use of view patterns in `step`. The `Nothing -> Nothing` means that if
+    -- the view pattern doesn't match then the whole pattern fails.
+
+{-@
+valueIsNf' :: {t:_ | value t} -> { step t == Nothing } @-}
+valueIsNf' :: TM -> Proof
+valueIsNf' = \case
+    TRU -> step TRU *** QED -- No pattern matches, evaluates to Nothing
+    FLS -> step FLS *** QED -- No pattern matches, evaluates to Nothing
+    ZRO -> step ZRO *** QED -- No pattern matches, evaluates to Nothing
+    SCC t | nValue t -> step (SCC t) ? valueIsNf' t *** QED
+    -- QQQ The only case where `step` might do work is for `SCC t`, but since
+    -- the precondition mandates `nValue t` we can use the inductive
+    -- assumption that `step t` is `Nothing`, which guarantees the `SCC t` case
+    -- in `step` won't match.
 
 {-@
 congruence :: f:_ -> Deterministic' {f} @-}
@@ -294,7 +301,6 @@ congruence _f _x _y₁ _y₂ = ()
 stepDeterministic' :: Deterministic' {step} @-}
 stepDeterministic' :: TM -> Maybe TM -> Maybe TM -> Proof
 stepDeterministic' = congruence step
-
 -- QQQ It is pointless to try to write down a proof of determinism of the
 -- step function because determinism is already part of LH's model of
 -- Haskell.
