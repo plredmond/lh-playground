@@ -110,6 +110,12 @@ data StepRule where
 {-@ type Stuck T = (NotValue {T}, NormalForm {Step} {T}) @-}
 
 {-@
+type Deterministic R
+    = x:_ -> y1:_ -> y2:_
+    -> Prop{ R x y1 } -> Prop{ R x y2 } -> {_:Proof | y1 == y2}
+@-}
+
+{-@
 someTermIsStuck :: Stuck {SCC TRU} @-}
 someTermIsStuck :: (TM, TM -> StepRule -> Proof)
 someTermIsStuck = (notValue, normalForm)
@@ -161,3 +167,18 @@ valueIsNf' = \case
     -- the precondition mandates `nValue t` we can use the inductive
     -- assumption that `step t` is `Nothing`, which guarantees the `SCC t` case
     -- in `step` won't match.
+
+{-@
+stepDeterministic :: Deterministic {Step} @-}
+stepDeterministic :: TM -> TM -> TM -> StepRule -> StepRule -> Proof
+stepDeterministic x y₁ y₂ TestTru{}  TestTru{}  = ()
+stepDeterministic x y₁ y₂ TestFls{}  TestFls{}  = ()
+stepDeterministic x y₁ y₂ Test{}     Test{}     = () *** Admit
+stepDeterministic x y₁ y₂ Scc{}      Scc{}      = () *** Admit
+stepDeterministic x y₁ y₂ PrdZro{}   PrdZro{}   = ()
+stepDeterministic x y₁ y₂ PrdScc{}   PrdScc{}   = ()
+stepDeterministic x y₁ y₂ Prd{}      Prd{}      = () *** Admit
+stepDeterministic x y₁ y₂ IszroZro{} IszroZro{} = ()
+stepDeterministic x y₁ y₂ IszroScc{} IszroScc{} = ()
+stepDeterministic x y₁ y₂ Iszro{}    Iszro{}    = () *** Admit
+stepDeterministic x y₁ y₂ xRy₁ xRy₂ = () *** Admit -- FIXME
