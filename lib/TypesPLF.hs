@@ -119,120 +119,68 @@ valueIsNf FLS   _t' Iszro{} = () -- No rules apply
 valueIsNf ZRO   _t' Iszro{} = () -- No rules apply
 valueIsNf SCC{} _t' (Scc u u' u2u') = valueIsNf u u' u2u'
 
+-- | Binder for a proof that `Step` is deterministic; used only for looking at
+-- the LH context/vim-annotations.
 {-@
 stepDeterministic :: Deterministic {Step} @-}
 stepDeterministic :: TM -> TM -> TM -> StepRule -> StepRule -> Proof
--- QQQ Have to handle 81 cases here.
+stepDeterministic = () *** Admit
 
-stepDeterministic _x _y₁ _y₂ TestTru{}  TestTru{}  = ()
-stepDeterministic _x _y₁ _y₂ TestTru{}  TestFls{}  = ()
-stepDeterministic _x _y₁ _y₂ TestTru{}  Test{}     = () *** Admit
-stepDeterministic _x _y₁ _y₂ TestTru{}  Scc{}      = ()
-stepDeterministic _x _y₁ _y₂ TestTru{}  PrdZro{}   = ()
-stepDeterministic _x _y₁ _y₂ TestTru{}  PrdScc{}   = ()
-stepDeterministic _x _y₁ _y₂ TestTru{}  Prd{}      = ()
-stepDeterministic _x _y₁ _y₂ TestTru{}  IszroZro{} = ()
-stepDeterministic _x _y₁ _y₂ TestTru{}  IszroScc{} = ()
-stepDeterministic _x _y₁ _y₂ TestTru{}  Iszro{}    = ()
+-- | Proof that `Step` is deterministic in the inductive proposition style via
+-- induction on the input x in `Step x`.
+{-@
+stepDeterministic_ind_x :: Deterministic {Step} @-}
+stepDeterministic_ind_x :: TM -> TM -> TM -> StepRule -> StepRule -> Proof
 
-stepDeterministic _x _y₁ _y₂ TestFls{}  TestTru{}  = ()
-stepDeterministic _x _y₁ _y₂ TestFls{}  TestFls{}  = ()
-stepDeterministic _x _y₁ _y₂ TestFls{}  Test{}     = () *** Admit
-stepDeterministic _x _y₁ _y₂ TestFls{}  Scc{}      = ()
-stepDeterministic _x _y₁ _y₂ TestFls{}  PrdZro{}   = ()
-stepDeterministic _x _y₁ _y₂ TestFls{}  PrdScc{}   = ()
-stepDeterministic _x _y₁ _y₂ TestFls{}  Prd{}      = ()
-stepDeterministic _x _y₁ _y₂ TestFls{}  IszroZro{} = ()
-stepDeterministic _x _y₁ _y₂ TestFls{}  IszroScc{} = ()
-stepDeterministic _x _y₁ _y₂ TestFls{}  Iszro{}    = ()
+stepDeterministic_ind_x TRU     _y₁ _y₂ _xRy₁ _xRy₂ = () *** Admit
+stepDeterministic_ind_x FLS     _y₁ _y₂ _xRy₁ _xRy₂ = () *** Admit
+stepDeterministic_ind_x TEST{}  _y₁ _y₂ _xRy₁ _xRy₂ = () *** Admit
+stepDeterministic_ind_x ZRO     _y₁ _y₂ _xRy₁ _xRy₂ = () *** Admit
+stepDeterministic_ind_x SCC{}   _y₁ _y₂ _xRy₁ _xRy₂ = () *** Admit
+stepDeterministic_ind_x PRD{}   _y₁ _y₂ _xRy₁ _xRy₂ = () *** Admit
+stepDeterministic_ind_x ISZRO{} _y₁ _y₂ _xRy₁ _xRy₂ = () *** Admit
 
-stepDeterministic _x _y₁ _y₂ Test{}     TestTru{}  = () *** Admit
-stepDeterministic _x _y₁ _y₂ Test{}     TestFls{}  = () *** Admit
-stepDeterministic _x _y₁ _y₂ Test{}     Test{}     = () *** Admit
-stepDeterministic _x _y₁ _y₂ Test{}     Scc{}      = ()
-stepDeterministic _x _y₁ _y₂ Test{}     PrdZro{}   = ()
-stepDeterministic _x _y₁ _y₂ Test{}     PrdScc{}   = ()
-stepDeterministic _x _y₁ _y₂ Test{}     Prd{}      = ()
-stepDeterministic _x _y₁ _y₂ Test{}     IszroZro{} = ()
-stepDeterministic _x _y₁ _y₂ Test{}     IszroScc{} = ()
-stepDeterministic _x _y₁ _y₂ Test{}     Iszro{}    = ()
+-- | Proof that `Step` is deterministic in the inductive proposition style via
+-- induction on the rules.
+{-@
+stepDeterministic_ind_xRy₁ :: Deterministic {Step} @-}
+stepDeterministic_ind_xRy₁ :: TM -> TM -> TM -> StepRule -> StepRule -> Proof
 
-stepDeterministic _x _y₁ _y₂ Scc{}      TestTru{}  = ()
-stepDeterministic _x _y₁ _y₂ Scc{}      TestFls{}  = ()
-stepDeterministic _x _y₁ _y₂ Scc{}      Test{}     = ()
-stepDeterministic _x _y₁ _y₂ Scc{}      Scc{}      = () *** Admit
-stepDeterministic _x _y₁ _y₂ Scc{}      PrdZro{}   = ()
-stepDeterministic _x _y₁ _y₂ Scc{}      PrdScc{}   = ()
-stepDeterministic _x _y₁ _y₂ Scc{}      Prd{}      = ()
-stepDeterministic _x _y₁ _y₂ Scc{}      IszroZro{} = ()
-stepDeterministic _x _y₁ _y₂ Scc{}      IszroScc{} = ()
-stepDeterministic _x _y₁ _y₂ Scc{}      Iszro{}    = ()
+stepDeterministic_ind_xRy₁ _x _y₁ _y₂ (TestTru _t₁ _t₂) (Test __t₁ __t₁' __t₂ __t₃ __t₁Rt₁') = () *** Admit
+stepDeterministic_ind_xRy₁ _x _y₁ _y₂ TestTru{} _xRy₂ = ()
 
-stepDeterministic _x _y₁ _y₂ PrdZro{}   TestTru{}  = ()
-stepDeterministic _x _y₁ _y₂ PrdZro{}   TestFls{}  = ()
-stepDeterministic _x _y₁ _y₂ PrdZro{}   Test{}     = ()
-stepDeterministic _x _y₁ _y₂ PrdZro{}   Scc{}      = ()
-stepDeterministic _x _y₁ _y₂ PrdZro{}   PrdZro{}   = ()
-stepDeterministic _x _y₁ _y₂ PrdZro{}   PrdScc{}   = ()
-stepDeterministic _x _y₁ _y₂ PrdZro{}   Prd{}      = () *** Admit
-stepDeterministic _x _y₁ _y₂ PrdZro{}   IszroZro{} = ()
-stepDeterministic _x _y₁ _y₂ PrdZro{}   IszroScc{} = ()
-stepDeterministic _x _y₁ _y₂ PrdZro{}   Iszro{}    = ()
+stepDeterministic_ind_xRy₁ _x _y₁ _y₂ TestFls{}  Test{}     = () *** Admit
+stepDeterministic_ind_xRy₁ _x _y₁ _y₂ TestFls{}  _xRy₂      = ()
 
-stepDeterministic _x _y₁ _y₂ PrdScc{}   TestTru{}  = ()
-stepDeterministic _x _y₁ _y₂ PrdScc{}   TestFls{}  = ()
-stepDeterministic _x _y₁ _y₂ PrdScc{}   Test{}     = ()
-stepDeterministic _x _y₁ _y₂ PrdScc{}   Scc{}      = ()
-stepDeterministic _x _y₁ _y₂ PrdScc{}   PrdZro{}   = ()
-stepDeterministic _x _y₁ _y₂ PrdScc{}   PrdScc{}   = ()
-stepDeterministic _x _y₁ _y₂ PrdScc{}   Prd{}      = () *** Admit
-stepDeterministic _x _y₁ _y₂ PrdScc{}   IszroZro{} = ()
-stepDeterministic _x _y₁ _y₂ PrdScc{}   IszroScc{} = ()
-stepDeterministic _x _y₁ _y₂ PrdScc{}   Iszro{}    = ()
+stepDeterministic_ind_xRy₁ _x _y₁ _y₂ Test{}     TestTru{}  = () *** Admit
+stepDeterministic_ind_xRy₁ _x _y₁ _y₂ Test{}     TestFls{}  = () *** Admit
+stepDeterministic_ind_xRy₁ _x _y₁ _y₂ Test{}     Test{}     = () *** Admit
+stepDeterministic_ind_xRy₁ _x _y₁ _y₂ Test{}     _xRy₂      = ()
 
-stepDeterministic _x _y₁ _y₂ Prd{}      TestTru{}  = ()
-stepDeterministic _x _y₁ _y₂ Prd{}      TestFls{}  = ()
-stepDeterministic _x _y₁ _y₂ Prd{}      Test{}     = ()
-stepDeterministic _x _y₁ _y₂ Prd{}      Scc{}      = ()
-stepDeterministic _x _y₁ _y₂ Prd{}      PrdZro{}   = () *** Admit
-stepDeterministic _x _y₁ _y₂ Prd{}      PrdScc{}   = () *** Admit
-stepDeterministic _x _y₁ _y₂ Prd{}      Prd{}      = () *** Admit
-stepDeterministic _x _y₁ _y₂ Prd{}      IszroZro{} = ()
-stepDeterministic _x _y₁ _y₂ Prd{}      IszroScc{} = ()
-stepDeterministic _x _y₁ _y₂ Prd{}      Iszro{}    = ()
+stepDeterministic_ind_xRy₁ _x _y₁ _y₂ Scc{}      Scc{}      = () *** Admit
+stepDeterministic_ind_xRy₁ _x _y₁ _y₂ Scc{}      _xRy₂      = ()
 
-stepDeterministic _x _y₁ _y₂ IszroZro{} TestTru{}  = ()
-stepDeterministic _x _y₁ _y₂ IszroZro{} TestFls{}  = ()
-stepDeterministic _x _y₁ _y₂ IszroZro{} Test{}     = ()
-stepDeterministic _x _y₁ _y₂ IszroZro{} Scc{}      = ()
-stepDeterministic _x _y₁ _y₂ IszroZro{} PrdZro{}   = ()
-stepDeterministic _x _y₁ _y₂ IszroZro{} PrdScc{}   = ()
-stepDeterministic _x _y₁ _y₂ IszroZro{} Prd{}      = ()
-stepDeterministic _x _y₁ _y₂ IszroZro{} IszroZro{} = ()
-stepDeterministic _x _y₁ _y₂ IszroZro{} IszroScc{} = ()
-stepDeterministic _x _y₁ _y₂ IszroZro{} Iszro{}    = () *** Admit
+stepDeterministic_ind_xRy₁ _x _y₁ _y₂ PrdZro{}   Prd{}      = () *** Admit
+stepDeterministic_ind_xRy₁ _x _y₁ _y₂ PrdZro{}   _xRy₂      = ()
 
-stepDeterministic _x _y₁ _y₂ IszroScc{} TestTru{}  = ()
-stepDeterministic _x _y₁ _y₂ IszroScc{} TestFls{}  = ()
-stepDeterministic _x _y₁ _y₂ IszroScc{} Test{}     = ()
-stepDeterministic _x _y₁ _y₂ IszroScc{} Scc{}      = ()
-stepDeterministic _x _y₁ _y₂ IszroScc{} PrdZro{}   = ()
-stepDeterministic _x _y₁ _y₂ IszroScc{} PrdScc{}   = ()
-stepDeterministic _x _y₁ _y₂ IszroScc{} Prd{}      = ()
-stepDeterministic _x _y₁ _y₂ IszroScc{} IszroZro{} = ()
-stepDeterministic _x _y₁ _y₂ IszroScc{} IszroScc{} = ()
-stepDeterministic _x _y₁ _y₂ IszroScc{} Iszro{}    = () *** Admit
+stepDeterministic_ind_xRy₁ _x _y₁ _y₂ PrdScc{}   Prd{}      = () *** Admit
+stepDeterministic_ind_xRy₁ _x _y₁ _y₂ PrdScc{}   _xRy₂      = ()
 
-stepDeterministic _x _y₁ _y₂ Iszro{}    TestTru{}  = ()
-stepDeterministic _x _y₁ _y₂ Iszro{}    TestFls{}  = ()
-stepDeterministic _x _y₁ _y₂ Iszro{}    Test{}     = ()
-stepDeterministic _x _y₁ _y₂ Iszro{}    Scc{}      = ()
-stepDeterministic _x _y₁ _y₂ Iszro{}    PrdZro{}   = ()
-stepDeterministic _x _y₁ _y₂ Iszro{}    PrdScc{}   = ()
-stepDeterministic _x _y₁ _y₂ Iszro{}    Prd{}      = ()
-stepDeterministic _x _y₁ _y₂ Iszro{}    IszroZro{} = () *** Admit
-stepDeterministic _x _y₁ _y₂ Iszro{}    IszroScc{} = () *** Admit
-stepDeterministic _x _y₁ _y₂ Iszro{}    Iszro{}    = () *** Admit
+stepDeterministic_ind_xRy₁ _x _y₁ _y₂ Prd{}      PrdZro{}   = () *** Admit
+stepDeterministic_ind_xRy₁ _x _y₁ _y₂ Prd{}      PrdScc{}   = () *** Admit
+stepDeterministic_ind_xRy₁ _x _y₁ _y₂ Prd{}      Prd{}      = () *** Admit
+stepDeterministic_ind_xRy₁ _x _y₁ _y₂ Prd{}      _xRy₂      = ()
+
+stepDeterministic_ind_xRy₁ _x _y₁ _y₂ IszroZro{} Iszro{}    = () *** Admit
+stepDeterministic_ind_xRy₁ _x _y₁ _y₂ IszroZro{} _xRy₂      = ()
+
+stepDeterministic_ind_xRy₁ _x _y₁ _y₂ IszroScc{} Iszro{}    = () *** Admit
+stepDeterministic_ind_xRy₁ _x _y₁ _y₂ IszroScc{} _xRy₂      = ()
+
+stepDeterministic_ind_xRy₁ _x _y₁ _y₂ Iszro{}    IszroZro{} = () *** Admit
+stepDeterministic_ind_xRy₁ _x _y₁ _y₂ Iszro{}    IszroScc{} = () *** Admit
+stepDeterministic_ind_xRy₁ _x _y₁ _y₂ Iszro{}    Iszro{}    = () *** Admit
+stepDeterministic_ind_xRy₁ _x _y₁ _y₂ Iszro{}    _xRy₂      = ()
 
 
 
@@ -245,14 +193,14 @@ stepf :: TM -> Maybe TM
 stepf = \case
     TEST TRU  t₁ _t₂                    -> Just $ t₁
     TEST FLS _t₁  t₂                    -> Just $ t₂
-    TEST _t₁@(stepf -> Just t₁') t₂ t₃   -> Just $ TEST t₁' t₂ t₃
-    SCC _t₁@(stepf -> Just t₁')          -> Just $ SCC t₁'
+    TEST _t₁@(stepf -> Just t₁') t₂ t₃  -> Just $ TEST t₁' t₂ t₃
+    SCC _t₁@(stepf -> Just t₁')         -> Just $ SCC t₁'
     PRD ZRO                             -> Just $ ZRO
     PRD (SCC v) | nValue v              -> Just $ v
-    PRD _t₁@(stepf -> Just t₁')          -> Just $ PRD t₁'
+    PRD _t₁@(stepf -> Just t₁')         -> Just $ PRD t₁'
     ISZRO ZRO                           -> Just $ TRU
     ISZRO (SCC v) | nValue v            -> Just $ FLS
-    ISZRO _t₁@(stepf -> Just t₁')        -> Just $ ISZRO t₁'
+    ISZRO _t₁@(stepf -> Just t₁')       -> Just $ ISZRO t₁'
     _                                   -> Nothing
 
 -- | Same meaning as Stuck?
@@ -291,6 +239,7 @@ valueIsNFf = \case
     -- assumption that `stepf t` is `Nothing`, which guarantees the `SCC t` case
     -- in `stepf` won't match.
 
+-- | FIXME: Not exactly congruence, but something like it.
 {-@
 congruence :: f:_ -> Deterministicf {f} @-}
 congruence :: (a -> b) -> a -> b -> b -> Proof
