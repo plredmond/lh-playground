@@ -124,7 +124,7 @@ valueIsNf SCC{} _t' (Scc u u' u2u') = valueIsNf u u' u2u'
 {-@
 stepDeterministic :: Deterministic {Step} @-}
 stepDeterministic :: TM -> TM -> TM -> StepRule -> StepRule -> Proof
-stepDeterministic = () *** Admit
+stepDeterministic = undefined
 
 -- | Proof that `Step` is deterministic in the inductive proposition style via
 -- induction on the input x in `Step x`.
@@ -146,7 +146,9 @@ stepDeterministic_ind_x ISZRO{} _y₁ _y₂ _xRy₁ _xRy₂ = () *** Admit
 stepDeterministic_ind_xRy₁ :: Deterministic {Step} @-}
 stepDeterministic_ind_xRy₁ :: TM -> TM -> TM -> StepRule -> StepRule -> Proof
 
-stepDeterministic_ind_xRy₁ _x _y₁ _y₂ (TestTru _t₁ _t₂) (Test __t₁ __t₁' __t₂ __t₃ __t₁Rt₁') = () *** Admit
+stepDeterministic_ind_xRy₁ _x _y₁ _y₂ (TestTru _t₁ _t₂) (Test __t₁ __t₁' __t₂ __t₃ __t₁Rt₁') = () *** Admit -- case must be completed
+stepDeterministic_ind_xRy₁ _x _y₁ _y₂ TestTru{} TestTru{} = trivial -- case can be deleted
+stepDeterministic_ind_xRy₁ _x _y₁ _y₂ TestTru{} Scc{} = impossible "" -- case can be deleted
 stepDeterministic_ind_xRy₁ _x _y₁ _y₂ TestTru{} _xRy₂ = ()
 
 stepDeterministic_ind_xRy₁ _x _y₁ _y₂ TestFls{}  Test{}     = () *** Admit
