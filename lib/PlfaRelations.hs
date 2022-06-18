@@ -5,7 +5,7 @@
 
 
 -- | Implementing some of https://plfa.github.io/Relations/
-module RelationsPLFA where
+module PlfaRelations where
 
 import Language.Haskell.Liquid.ProofCombinators
 
@@ -261,4 +261,4 @@ plusAssocEquational (Suc m₀) n p
 {-@
 plusAssocNative :: m:_ -> n:_ -> p:_ -> {(m + n) + p == m + (n + p)} @-}
 plusAssocNative :: Int -> Int -> Int -> Proof
-plusAssocNative m n p = () -- no PLE required
+plusAssocNative _m _n _p = () -- no PLE required

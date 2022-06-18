@@ -5,6 +5,8 @@ dependencies:
     - liquid-containers
     - liquid-prelude
     - liquidhaskell
+    - QuickCheck
+    - template-haskell
 
 ghc-options:
     - -Wall

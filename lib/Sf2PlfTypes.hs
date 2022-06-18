@@ -5,7 +5,7 @@
 {-# LANGUAGE ViewPatterns #-}
 
 -- | <https://softwarefoundations.cis.upenn.edu/plf-current/Types.html>
-module TypesPLF where
+module Sf2PlfTypes where
 
 import Language.Haskell.Liquid.ProofCombinators
 
