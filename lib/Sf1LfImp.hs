@@ -102,5 +102,16 @@ aeval_iff_AEvalR₂ a n aRn = case aRn of
 -- TODO: Excercise (bevalR): Write a relation bevalR in the same style as
 -- aevalR, and prove that it is equivalent to beval. 
 
--- WHY?  To do the Hoare logic chapters, need to first complete IMP, b/c
--- Hoare logic is about IMP.
+-- TODO: Module aevalR_division -- You can extend aevalR with division (a
+-- partial operation not defined for a denominator of zero). It would be
+-- difficult to do so for the function definition.
+
+-- TODO: Module aevalR_extended -- You can extend aevalR with a random
+-- number generator (a nondeterministic operation). It would be difficult
+-- to do so for the functional definition.
+
+
+-- WHY?
+-- Goal: Shallow embedding of Hoare logic in LH.
+-- Subgoal: Read the Hoare logic chapters of SF.
+-- Subsubgoal: Read the Imp chapter of SF.

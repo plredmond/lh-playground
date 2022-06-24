@@ -89,6 +89,7 @@ eqSymmetric₁ _x _y xEQy@Refl{} = xEQy
 eqSymmetric₂ :: x:_ -> y:_ -> Prop {EQ y x} -> Prop {EQ x y} @-}
 eqSymmetric₂ :: a -> a -> EQRule a -> EQRule a
 eqSymmetric₂ _x _y yEQx@Refl{} = yEQx
+-- FIX THESE
 
 {-@
 eqTransitive :: x:_ -> y:_ -> z:_ -> Prop {EQ x y} -> Prop {EQ y z} -> Prop {EQ x z} @-}
