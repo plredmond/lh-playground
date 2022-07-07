@@ -4,3 +4,5 @@
 dist/
 result
 build-env*
+.stack-work/
+stack.yaml.lock
