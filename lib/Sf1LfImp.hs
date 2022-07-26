@@ -3,6 +3,8 @@
 {-@ LIQUID "--ple-local" @-}
 {-# LANGUAGE LambdaCase #-}
 
+{-# OPTIONS_GHC "-Wno-unused-matches" #-}
+
 -- | https://softwarefoundations.cis.upenn.edu/lf-current/Imp.html
 module Sf1LfImp where
 
@@ -49,16 +51,16 @@ optimize_0plus = \case
     AMinus e₁ e₂ -> optimize_0plus e₁ `AMinus` optimize_0plus e₂
     AMult  e₁ e₂ -> optimize_0plus e₁ `AMult`  optimize_0plus e₂
 
-{-@ ple optimize_0plus_sound @-}
-{-@
-optimize_0plus_sound :: a:_ -> {aeval (optimize_0plus a) == aeval a} @-}
-optimize_0plus_sound :: AExp -> Proof
-optimize_0plus_sound a = case a of
-    ANum  _n     -> ()
---  APlus  (ANum 0) a₂ -> optimize_0plus_sound a₂ -- "interesting case"
-    APlus  a₁ a₂ -> optimize_0plus_sound a₁ &&& optimize_0plus_sound a₂
-    AMinus a₁ a₂ -> optimize_0plus_sound a₁ &&& optimize_0plus_sound a₂
-    AMult  a₁ a₂ -> optimize_0plus_sound a₁ &&& optimize_0plus_sound a₂
+-- {-@ ple optimize_0plus_sound @-}
+-- {-@
+-- optimize_0plus_sound :: a:_ -> {aeval (optimize_0plus a) == aeval a} @-}
+-- optimize_0plus_sound :: AExp -> Proof
+-- optimize_0plus_sound a = case a of
+--     ANum  _n     -> ()
+-- --  APlus  (ANum 0) a₂ -> optimize_0plus_sound a₂ -- "interesting case"
+--     APlus  a₁ a₂ -> optimize_0plus_sound a₁ &&& optimize_0plus_sound a₂
+--     AMinus a₁ a₂ -> optimize_0plus_sound a₁ &&& optimize_0plus_sound a₂
+--     AMult  a₁ a₂ -> optimize_0plus_sound a₁ &&& optimize_0plus_sound a₂
 
 data AEvalRProp = AExp :==> Int
 {-@ infixr 4 :==> @-}

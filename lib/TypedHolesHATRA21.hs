@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC "-Wno-unused-matches" #-}
+
 -- | Video of the talk is <https://www.youtube.com/watch?v=kd8cerjyjH4>
 module TypedHolesHATRA21 where
 

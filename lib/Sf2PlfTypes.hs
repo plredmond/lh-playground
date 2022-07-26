@@ -127,62 +127,92 @@ stepDeterministic :: TM -> TM -> TM -> StepRule -> StepRule -> Proof
 stepDeterministic = undefined
 
 -- | Proof that `Step` is deterministic in the inductive proposition style via
--- induction on the input x in `Step x`.
-{-@
-stepDeterministic_ind_x :: Deterministic {Step} @-}
-stepDeterministic_ind_x :: TM -> TM -> TM -> StepRule -> StepRule -> Proof
-
-stepDeterministic_ind_x TRU     _y₁ _y₂ _xRy₁ _xRy₂ = () *** Admit
-stepDeterministic_ind_x FLS     _y₁ _y₂ _xRy₁ _xRy₂ = () *** Admit
-stepDeterministic_ind_x TEST{}  _y₁ _y₂ _xRy₁ _xRy₂ = () *** Admit
-stepDeterministic_ind_x ZRO     _y₁ _y₂ _xRy₁ _xRy₂ = () *** Admit
-stepDeterministic_ind_x SCC{}   _y₁ _y₂ _xRy₁ _xRy₂ = () *** Admit
-stepDeterministic_ind_x PRD{}   _y₁ _y₂ _xRy₁ _xRy₂ = () *** Admit
-stepDeterministic_ind_x ISZRO{} _y₁ _y₂ _xRy₁ _xRy₂ = () *** Admit
-
--- | Proof that `Step` is deterministic in the inductive proposition style via
 -- induction on the rules.
 {-@
 stepDeterministic_ind_xRy₁ :: Deterministic {Step} @-}
 stepDeterministic_ind_xRy₁ :: TM -> TM -> TM -> StepRule -> StepRule -> Proof
 
-stepDeterministic_ind_xRy₁ _x _y₁ _y₂ (TestTru _t₁ _t₂) (Test __t₁ __t₁' __t₂ __t₃ __t₁Rt₁') = () *** Admit -- case must be completed
-stepDeterministic_ind_xRy₁ _x _y₁ _y₂ TestTru{} TestTru{} = trivial -- case can be deleted
-stepDeterministic_ind_xRy₁ _x _y₁ _y₂ TestTru{} Scc{} = impossible "" -- case can be deleted
-stepDeterministic_ind_xRy₁ _x _y₁ _y₂ TestTru{} _xRy₂ = ()
+stepDeterministic_ind_xRy₁ _x _y₁ _y₂ _xRy₁ _xRy₂ = () *** Admit
 
-stepDeterministic_ind_xRy₁ _x _y₁ _y₂ TestFls{}  Test{}     = () *** Admit
-stepDeterministic_ind_xRy₁ _x _y₁ _y₂ TestFls{}  _xRy₂      = ()
+-- stepDeterministic_ind_xRy₁ _x _y₁ _y₂ TestTru{} _xRy₂ = () *** Admit
+-- stepDeterministic_ind_xRy₁ _x _y₁ _y₂ TestFls{} _xRy₂ = () *** Admit
+-- stepDeterministic_ind_xRy₁ _x _y₁ _y₂ Test{}    _xRy₂ = () *** Admit
 
-stepDeterministic_ind_xRy₁ _x _y₁ _y₂ Test{}     TestTru{}  = () *** Admit
-stepDeterministic_ind_xRy₁ _x _y₁ _y₂ Test{}     TestFls{}  = () *** Admit
-stepDeterministic_ind_xRy₁ _x _y₁ _y₂ Test{}     Test{}     = () *** Admit
-stepDeterministic_ind_xRy₁ _x _y₁ _y₂ Test{}     _xRy₂      = ()
+-- stepDeterministic_ind_xRy₁ _x _y₁ _y₂ TestTru{}  TestTru{} = () *** Admit
+-- stepDeterministic_ind_xRy₁ _x _y₁ _y₂ TestTru{}  __DEFAULT = () *** Admit
+-- stepDeterministic_ind_xRy₁ _x _y₁ _y₂ TestFls{}  _xRy₂ = () *** Admit
+-- stepDeterministic_ind_xRy₁ _x _y₁ _y₂ Test{}     _xRy₂ = () *** Admit
+-- stepDeterministic_ind_xRy₁ _x _y₁ _y₂ Scc{}      _xRy₂ = () *** Admit
+-- stepDeterministic_ind_xRy₁ _x _y₁ _y₂ PrdZro{}   _xRy₂ = () *** Admit
+-- stepDeterministic_ind_xRy₁ _x _y₁ _y₂ PrdScc{}   _xRy₂ = () *** Admit
+-- stepDeterministic_ind_xRy₁ _x _y₁ _y₂ Prd{}      _xRy₂ = () *** Admit
+-- stepDeterministic_ind_xRy₁ _x _y₁ _y₂ IszroZro{} _xRy₂ = () *** Admit
+-- stepDeterministic_ind_xRy₁ _x _y₁ _y₂ IszroScc{} _xRy₂ = () *** Admit
+-- stepDeterministic_ind_xRy₁ _x _y₁ _y₂ Iszro{}    _xRy₂ = () *** Admit
 
-stepDeterministic_ind_xRy₁ _x _y₁ _y₂ Scc{}      Scc{}      = () *** Admit
-stepDeterministic_ind_xRy₁ _x _y₁ _y₂ Scc{}      _xRy₂      = ()
+-- stepDeterministic_ind_xRy₁ _x _y₁ _y₂ TestTru{}  TestTru{}  = () *** Admit
+-- stepDeterministic_ind_xRy₁ _x _y₁ _y₂ TestTru{}  Test{}     = () *** Admit
+-- stepDeterministic_ind_xRy₁ _x _y₁ _y₂ TestFls{}  TestFls{}  = () *** Admit
+-- stepDeterministic_ind_xRy₁ _x _y₁ _y₂ TestFls{}  Test{}     = () *** Admit
+-- stepDeterministic_ind_xRy₁ _x _y₁ _y₂ Test{}     TestTru{}  = () *** Admit
+-- stepDeterministic_ind_xRy₁ _x _y₁ _y₂ Test{}     TestFls{}  = () *** Admit
+-- stepDeterministic_ind_xRy₁ _x _y₁ _y₂ Test{}     Test{}     = () *** Admit
+-- stepDeterministic_ind_xRy₁ _x _y₁ _y₂ Scc{}      Scc{}      = () *** Admit
+-- stepDeterministic_ind_xRy₁ _x _y₁ _y₂ PrdZro{}   PrdZro{}   = () *** Admit
+-- stepDeterministic_ind_xRy₁ _x _y₁ _y₂ PrdZro{}   Prd{}      = () *** Admit
+-- stepDeterministic_ind_xRy₁ _x _y₁ _y₂ PrdScc{}   PrdScc{}   = () *** Admit
+-- stepDeterministic_ind_xRy₁ _x _y₁ _y₂ PrdScc{}   Prd{}      = () *** Admit
+-- stepDeterministic_ind_xRy₁ _x _y₁ _y₂ Prd{}      PrdZro{}   = () *** Admit
+-- stepDeterministic_ind_xRy₁ _x _y₁ _y₂ Prd{}      PrdScc{}   = () *** Admit
+-- stepDeterministic_ind_xRy₁ _x _y₁ _y₂ Prd{}      Prd{}      = () *** Admit
+-- stepDeterministic_ind_xRy₁ _x _y₁ _y₂ IszroZro{} IszroZro{} = () *** Admit
+-- stepDeterministic_ind_xRy₁ _x _y₁ _y₂ IszroZro{} Iszro{}    = () *** Admit
+-- stepDeterministic_ind_xRy₁ _x _y₁ _y₂ IszroScc{} IszroScc{} = () *** Admit
+-- stepDeterministic_ind_xRy₁ _x _y₁ _y₂ IszroScc{} Iszro{}    = () *** Admit
+-- stepDeterministic_ind_xRy₁ _x _y₁ _y₂ Iszro{}    IszroZro{} = () *** Admit
+-- stepDeterministic_ind_xRy₁ _x _y₁ _y₂ Iszro{}    IszroScc{} = () *** Admit
+-- stepDeterministic_ind_xRy₁ _x _y₁ _y₂ Iszro{}    Iszro{}    = () *** Admit
 
-stepDeterministic_ind_xRy₁ _x _y₁ _y₂ PrdZro{}   Prd{}      = () *** Admit
-stepDeterministic_ind_xRy₁ _x _y₁ _y₂ PrdZro{}   _xRy₂      = ()
+-- See "potential followup" in the PR:
+-- https://github.com/ucsd-progsys/liquidhaskell/pull/2045
 
-stepDeterministic_ind_xRy₁ _x _y₁ _y₂ PrdScc{}   Prd{}      = () *** Admit
-stepDeterministic_ind_xRy₁ _x _y₁ _y₂ PrdScc{}   _xRy₂      = ()
 
-stepDeterministic_ind_xRy₁ _x _y₁ _y₂ Prd{}      PrdZro{}   = () *** Admit
-stepDeterministic_ind_xRy₁ _x _y₁ _y₂ Prd{}      PrdScc{}   = () *** Admit
-stepDeterministic_ind_xRy₁ _x _y₁ _y₂ Prd{}      Prd{}      = () *** Admit
-stepDeterministic_ind_xRy₁ _x _y₁ _y₂ Prd{}      _xRy₂      = ()
 
-stepDeterministic_ind_xRy₁ _x _y₁ _y₂ IszroZro{} Iszro{}    = () *** Admit
-stepDeterministic_ind_xRy₁ _x _y₁ _y₂ IszroZro{} _xRy₂      = ()
 
-stepDeterministic_ind_xRy₁ _x _y₁ _y₂ IszroScc{} Iszro{}    = () *** Admit
-stepDeterministic_ind_xRy₁ _x _y₁ _y₂ IszroScc{} _xRy₂      = ()
 
-stepDeterministic_ind_xRy₁ _x _y₁ _y₂ Iszro{}    IszroZro{} = () *** Admit
-stepDeterministic_ind_xRy₁ _x _y₁ _y₂ Iszro{}    IszroScc{} = () *** Admit
-stepDeterministic_ind_xRy₁ _x _y₁ _y₂ Iszro{}    Iszro{}    = () *** Admit
-stepDeterministic_ind_xRy₁ _x _y₁ _y₂ Iszro{}    _xRy₂      = ()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
